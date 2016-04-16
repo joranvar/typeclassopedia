@@ -30,5 +30,10 @@ instance Functor' ITree where
   fmap g (Leaf h)  = Leaf (fmap g h)
   fmap g (Node as) = Node ((fmap . fmap) g as)
 
+data NoFunctor a = NoFunctor (a -> Int)
+
+instance Functor' NoFunctor where
+  fmap g (NoFunctor h) = NoFunctor (undefined g h)
+
 main :: IO ()
 main = undefined
