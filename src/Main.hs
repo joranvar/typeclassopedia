@@ -12,5 +12,8 @@ instance Functor' (Either e) where
 instance Functor' ((->) e) where
   fmap = (.)
 
+instance Functor' ((,) e) where
+  fmap g (e, a) = (e, g a)
+
 main :: IO ()
 main = undefined
