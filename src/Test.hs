@@ -1,4 +1,4 @@
-import Prelude (IO, (.), undefined, Int, id, (==), ($), Show, Eq, (+))
+import Prelude (IO, (.), undefined, Int, id, (==), ($), Show, Eq, (+), return)
 import qualified Test.QuickCheck as Q
 
 class Functor' f where
@@ -51,7 +51,20 @@ instance Functor' Maybe where
   fmap _ (Just _) = Nothing
   fmap _ Nothing  = Nothing
 
+newtype EvilList a = EvilList [a] deriving (Show, Eq)
+instance (Q.Arbitrary a) => Q.Arbitrary (EvilList a) where
+  arbitrary = do
+    a <- Q.arbitrary
+    return $ EvilList a
+
+instance Functor' EvilList where
+  fmap _ (EvilList []) = EvilList []
+  fmap g (EvilList (x:xs)) = EvilList $ g x : g x : fmap g xs
+
 main :: IO ()
 main = do
   Q.quickCheck $ \x -> fmap id x == id (x :: Maybe Int)
   Q.quickCheck $ \x i j -> (fmap (+ i) . fmap (+ j)) x  == fmap ((+ i) . (+ j)) (x :: Maybe Int)
+
+  Q.quickCheck $ \x -> fmap id x == id (x :: EvilList Int)
+  Q.quickCheck $ \x i j -> (fmap (+ i) . fmap (+ j)) x  == fmap ((+ i) . (+ j)) (x :: EvilList Int)
