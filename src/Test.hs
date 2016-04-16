@@ -93,5 +93,14 @@ instance Applicative' Maybe where
   Just g <*> Just x = Just $ g x
   _      <*> _      = Nothing
 
+firstApplicativeLawHolds :: (Applicative' a, Eq (a b)) => a b -> Bool
+firstApplicativeLawHolds a = (pure id <*> a) == a
+
+applicativeLaws :: IO ()
+applicativeLaws = do
+  Q.quickCheck $ \x -> firstApplicativeLawHolds (x :: Maybe Int)
+
 main :: IO ()
-main = functorLaws
+main = do
+  functorLaws
+  applicativeLaws
