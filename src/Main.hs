@@ -1,4 +1,4 @@
-import Prelude (IO, (.), undefined)
+import Prelude (IO, (.), undefined, Int)
 
 class Functor' f where
   fmap :: (a -> b) -> f a -> f b
@@ -19,6 +19,16 @@ data Pair a = Pair a a
 
 instance Functor' Pair where
   fmap g (Pair a b) = Pair (g a) (g b)
+
+data ITree a = Leaf (Int -> a) | Node [ITree a]
+
+instance Functor' [] where
+  fmap _ []     = []
+  fmap g (x:xs) = g x : fmap g xs
+
+instance Functor' ITree where
+  fmap g (Leaf h)  = Leaf (fmap g h)
+  fmap g (Node as) = Node ((fmap . fmap) g as)
 
 main :: IO ()
 main = undefined
