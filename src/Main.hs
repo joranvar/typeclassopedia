@@ -35,5 +35,10 @@ data NoFunctor a = NoFunctor (a -> Int)
 instance Functor' NoFunctor where
   fmap g (NoFunctor h) = NoFunctor (undefined g h)
 
+data FunctorFunctor f g a = FunctorFunctor (f (g a))
+
+instance (Functor' f, Functor' g) => Functor' (FunctorFunctor f g) where
+  fmap g (FunctorFunctor ff) = FunctorFunctor ((fmap . fmap) g ff)
+
 main :: IO ()
 main = undefined
