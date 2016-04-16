@@ -1,4 +1,5 @@
-import Prelude (IO, (.), undefined, Int)
+import Prelude (IO, (.), undefined, Int, id, (==), ($), Show, Eq, (+))
+import qualified Test.QuickCheck as Q
 
 class Functor' f where
   fmap :: (a -> b) -> f a -> f b
@@ -40,11 +41,17 @@ data FunctorFunctor f g a = FunctorFunctor (f (g a))
 instance (Functor' f, Functor' g) => Functor' (FunctorFunctor f g) where
   fmap g (FunctorFunctor ff) = FunctorFunctor ((fmap . fmap) g ff)
 
-data Maybe a = Just a | Nothing
+data Maybe a = Just a | Nothing deriving (Show, Eq)
+instance (Q.Arbitrary a) => Q.Arbitrary (Maybe a) where
+  arbitrary = do
+    a <- Q.arbitrary
+    Q.elements [Just a, Nothing]
 
 instance Functor' Maybe where
   fmap _ (Just _) = Nothing
   fmap _ Nothing  = Nothing
 
 main :: IO ()
-main = undefined
+main = do
+  Q.quickCheck $ \x -> fmap id x == id (x :: Maybe Int)
+  Q.quickCheck $ \x i j -> (fmap (+ i) . fmap (+ j)) x  == fmap ((+ i) . (+ j)) (x :: Maybe Int)
