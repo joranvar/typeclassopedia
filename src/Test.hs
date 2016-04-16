@@ -1,4 +1,4 @@
-import Prelude (IO, (.), undefined, Int, id, (==), ($), Show, Eq, (+), return)
+import Prelude (IO, (.), undefined, Int, id, (==), ($), Show, Eq, (+), return, Bool)
 import qualified Test.QuickCheck as Q
 
 class Functor' f where
@@ -61,10 +61,16 @@ instance Functor' EvilList where
   fmap _ (EvilList []) = EvilList []
   fmap g (EvilList (x:xs)) = EvilList $ g x : g x : fmap g xs
 
+firstFunctorLawHolds :: (Functor' f, Eq (f a)) => f a -> Bool
+firstFunctorLawHolds f = fmap id f == f
+
+secondFunctorLawHolds :: (Functor' f, Eq (f c)) => (a -> b) -> (b -> c) -> f a -> Bool
+secondFunctorLawHolds h g f = (fmap g . fmap h) f == fmap (g . h) f
+
 main :: IO ()
 main = do
-  Q.quickCheck $ \x -> fmap id x == id (x :: Maybe Int)
-  Q.quickCheck $ \x i j -> (fmap (+ i) . fmap (+ j)) x  == fmap ((+ i) . (+ j)) (x :: Maybe Int)
+  Q.quickCheck $ \x -> firstFunctorLawHolds (x :: Maybe Int)
+  Q.quickCheck $ \x i j -> secondFunctorLawHolds (+ i) (+ j) (x :: Maybe Int)
 
-  Q.quickCheck $ \x -> fmap id x == id (x :: EvilList Int)
-  Q.quickCheck $ \x i j -> (fmap (+ i) . fmap (+ j)) x  == fmap ((+ i) . (+ j)) (x :: EvilList Int)
+  Q.quickCheck $ \x -> firstFunctorLawHolds (x :: EvilList Int)
+  Q.quickCheck $ \x i j -> secondFunctorLawHolds (+ i) (+ j) (x :: EvilList Int)
