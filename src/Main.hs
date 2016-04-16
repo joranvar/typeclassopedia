@@ -40,5 +40,11 @@ data FunctorFunctor f g a = FunctorFunctor (f (g a))
 instance (Functor' f, Functor' g) => Functor' (FunctorFunctor f g) where
   fmap g (FunctorFunctor ff) = FunctorFunctor ((fmap . fmap) g ff)
 
+data Maybe a = Just a | Nothing
+
+instance Functor' Maybe where
+  fmap _ (Just _) = Nothing
+  fmap _ Nothing  = Nothing
+
 main :: IO ()
 main = undefined
