@@ -67,6 +67,14 @@ firstFunctorLawHolds f = fmap id f == f
 secondFunctorLawHolds :: (Functor' f, Eq (f c)) => (a -> b) -> (b -> c) -> f a -> Bool
 secondFunctorLawHolds h g f = (fmap g . fmap h) f == fmap (g . h) f
 
+functorLaws :: IO ()
+functorLaws = do
+  Q.quickCheck $ \x -> firstFunctorLawHolds (x :: Maybe Int)
+  Q.quickCheck $ \(x, i, j) -> secondFunctorLawHolds (+ i) (+ j) (x :: Maybe Int)
+
+  Q.quickCheck $ \x -> firstFunctorLawHolds (x :: EvilList Int)
+  Q.quickCheck $ \(x, i, j) -> secondFunctorLawHolds (+ i) (+ j) (x :: EvilList Int)
+
 -- pure f <*> x = pure (flip ($)) <*> x <*> pure f
 -- Interchange:
 -- pure f <*> x = pure (flip ($)) <*> pure ($ f) <*> x
@@ -75,10 +83,15 @@ secondFunctorLawHolds h g f = (fmap g . fmap h) f == fmap (g . h) f
 -- Simplification of (flip ($) ($ f))
 -- pure f <*> x = pure (flip ($) ($ f)) <*> x
 
-main :: IO ()
-main = do
-  Q.quickCheck $ \x -> firstFunctorLawHolds (x :: Maybe Int)
-  Q.quickCheck $ \(x, i, j) -> secondFunctorLawHolds (+ i) (+ j) (x :: Maybe Int)
+class (Functor' f) => Applicative' f where
+  pure  :: a -> f a
+  infixl 4 <*>
+  (<*>) :: f (a -> b) -> f a -> f b
 
-  Q.quickCheck $ \x -> firstFunctorLawHolds (x :: EvilList Int)
-  Q.quickCheck $ \(x, i, j) -> secondFunctorLawHolds (+ i) (+ j) (x :: EvilList Int)
+instance Applicative' Maybe where
+  pure              = Just
+  Just g <*> Just x = Just $ g x
+  _      <*> _      = Nothing
+
+main :: IO ()
+main = functorLaws
