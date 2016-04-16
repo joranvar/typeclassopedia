@@ -1,5 +1,6 @@
 import Prelude (IO, (.), undefined, Int, id, (==), ($), Show, Eq, (+), return, Bool)
 import qualified Test.QuickCheck as Q
+import Data.List (repeat, zipWith)
 
 class Functor' f where
   fmap :: (a -> b) -> f a -> f b
@@ -92,6 +93,15 @@ instance Applicative' Maybe where
   pure              = Just
   Just g <*> Just x = Just $ g x
   _      <*> _      = Nothing
+
+newtype ZipList a = ZipList { getZipList :: [a] }
+
+instance Functor' ZipList where
+  fmap g = ZipList . fmap g . getZipList
+
+instance Applicative' ZipList where
+  pure = ZipList . repeat
+  (ZipList gs) <*> (ZipList xs) = ZipList (zipWith ($) gs xs)
 
 firstApplicativeLawHolds :: (Applicative' a, Eq (a b)) => a b -> Bool
 firstApplicativeLawHolds a = (pure id <*> a) == a
