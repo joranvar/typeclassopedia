@@ -94,7 +94,12 @@ instance Applicative' Maybe where
   Just g <*> Just x = Just $ g x
   _      <*> _      = Nothing
 
-newtype ZipList a = ZipList { getZipList :: [a] }
+newtype ZipList a = ZipList { getZipList :: [a] } deriving (Show, Eq)
+
+instance (Q.Arbitrary a) => Q.Arbitrary (ZipList a) where
+  arbitrary = do
+    a <- Q.arbitrary
+    return $ ZipList a
 
 instance Functor' ZipList where
   fmap g = ZipList . fmap g . getZipList
@@ -109,6 +114,7 @@ firstApplicativeLawHolds a = (pure id <*> a) == a
 applicativeLaws :: IO ()
 applicativeLaws = do
   Q.quickCheck $ \x -> firstApplicativeLawHolds (x :: Maybe Int)
+  Q.quickCheck $ \x -> firstApplicativeLawHolds (x :: ZipList Int)
 
 main :: IO ()
 main = do
