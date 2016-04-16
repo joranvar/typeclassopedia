@@ -70,7 +70,7 @@ secondFunctorLawHolds h g f = (fmap g . fmap h) f == fmap (g . h) f
 main :: IO ()
 main = do
   Q.quickCheck $ \x -> firstFunctorLawHolds (x :: Maybe Int)
-  Q.quickCheck $ \x i j -> secondFunctorLawHolds (+ i) (+ j) (x :: Maybe Int)
+  Q.quickCheck $ \(x, i, j) -> secondFunctorLawHolds (+ i) (+ j) (x :: Maybe Int)
 
   Q.quickCheck $ \x -> firstFunctorLawHolds (x :: EvilList Int)
-  Q.quickCheck $ \x i j -> secondFunctorLawHolds (+ i) (+ j) (x :: EvilList Int)
+  Q.quickCheck $ \(x, i, j) -> secondFunctorLawHolds (+ i) (+ j) (x :: EvilList Int)
