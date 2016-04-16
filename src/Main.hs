@@ -15,5 +15,10 @@ instance Functor' ((->) e) where
 instance Functor' ((,) e) where
   fmap g (e, a) = (e, g a)
 
+data Pair a = Pair a a
+
+instance Functor' Pair where
+  fmap g (Pair a b) = Pair (g a) (g b)
+
 main :: IO ()
 main = undefined
