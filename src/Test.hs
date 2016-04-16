@@ -67,6 +67,14 @@ firstFunctorLawHolds f = fmap id f == f
 secondFunctorLawHolds :: (Functor' f, Eq (f c)) => (a -> b) -> (b -> c) -> f a -> Bool
 secondFunctorLawHolds h g f = (fmap g . fmap h) f == fmap (g . h) f
 
+-- pure f <*> x = pure (flip ($)) <*> x <*> pure f
+-- Interchange:
+-- pure f <*> x = pure (flip ($)) <*> pure ($ f) <*> x
+-- Homomorphism:
+-- pure f <*> x = pure (flip ($) ($ f)) <*> x
+-- Simplification of (flip ($) ($ f))
+-- pure f <*> x = pure (flip ($) ($ f)) <*> x
+
 main :: IO ()
 main = do
   Q.quickCheck $ \x -> firstFunctorLawHolds (x :: Maybe Int)
