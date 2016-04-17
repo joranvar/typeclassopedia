@@ -1,6 +1,6 @@
 import Prelude (IO, (.), undefined, Int, id, (==), ($), Show, Eq, (+), return, Bool(..), const, uncurry, String)
 import qualified Test.QuickCheck as Q
-import Data.List (repeat, zipWith, zip, (++))
+import Data.List (repeat, zipWith, zip, (++), concat)
 
 class Functor' f where
   fmap :: (a -> b) -> f a -> f b
@@ -151,6 +151,20 @@ applicativeLaws = do
   Q.quickCheck $ \x -> firstApplicativeLawHolds (x :: Maybe Int)
   Q.quickCheck $ \x -> firstApplicativeLawHolds (x :: ZipList Int)
   Q.quickCheck $ \x -> firstApplicativeLawHolds $ MonoidalApplicative (x :: MonoidalZipList Int)
+
+class (Applicative' f) => Monad' f where
+  --return :: a -> f a
+  --return = pure
+  (>>=) :: f a -> (a -> f b) -> f b
+  (>>)  :: f a -> f b -> f b
+  f >> f1 = f >>= const f1
+
+instance Applicative' [] where
+  pure = (:[])
+  g <*> x = [ g' x' | g' <- g, x' <- x ]
+
+instance Monad' [] where
+  f >>= g = concat $ pure g <*> f
 
 main :: IO ()
 main = do
