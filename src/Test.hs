@@ -1,6 +1,6 @@
-import Prelude (IO, (.), undefined, Int, id, (==), ($), Show, Eq, (+), return, Bool(..), const, uncurry)
+import Prelude (IO, (.), undefined, Int, id, (==), ($), Show, Eq, (+), return, Bool(..), const, uncurry, String)
 import qualified Test.QuickCheck as Q
-import Data.List (repeat, zipWith, zip)
+import Data.List (repeat, zipWith, zip, (++))
 
 class Functor' f where
   fmap :: (a -> b) -> f a -> f b
@@ -68,13 +68,17 @@ firstFunctorLawHolds f = fmap id f == f
 secondFunctorLawHolds :: (Functor' f, Eq (f c)) => (a -> b) -> (b -> c) -> f a -> Bool
 secondFunctorLawHolds h g f = (fmap g . fmap h) f == fmap (g . h) f
 
+labelFailing :: String -> Bool -> Q.Property
+labelFailing label False  = Q.label ("failed " ++ label) $ Q.property True
+labelFailing _ True = Q.property True
+
 functorLaws :: IO ()
 functorLaws = do
-  Q.quickCheck $ \x -> const True $ firstFunctorLawHolds (x :: Maybe Int)
-  Q.quickCheck $ \(x, i, j) -> secondFunctorLawHolds (+ i) (+ j) (x :: Maybe Int)
+  Q.quickCheck $ \x -> labelFailing "EvilMaybe 1st" $ firstFunctorLawHolds (x :: Maybe Int)
+  Q.quickCheck $ \(x, i, j) -> labelFailing "EvilMaybe 2nd" $ secondFunctorLawHolds (+ i) (+ j) (x :: Maybe Int)
 
-  Q.quickCheck $ \x -> const True $ firstFunctorLawHolds (x :: EvilList Int)
-  Q.quickCheck $ \(x, i, j) -> const True $ secondFunctorLawHolds (+ i) (+ j) (x :: EvilList Int)
+  Q.quickCheck $ \x -> labelFailing "EvilList 1st" $ firstFunctorLawHolds (x :: EvilList Int)
+  Q.quickCheck $ \(x, i, j) -> labelFailing "EvilList 2nd" $ secondFunctorLawHolds (+ i) (+ j) (x :: EvilList Int)
 
 -- pure f <*> x = pure (flip ($)) <*> x <*> pure f
 -- Interchange:
