@@ -1,6 +1,6 @@
 import Prelude (IO, (.), undefined, Int, id, (==), ($), Show, Eq, (+), return, Bool(..), const, uncurry)
 import qualified Test.QuickCheck as Q
-import Data.List (repeat, zipWith)
+import Data.List (repeat, zipWith, zip)
 
 class Functor' f where
   fmap :: (a -> b) -> f a -> f b
@@ -112,7 +112,7 @@ class (Functor' f) => Monoidal' f where
   unit :: f ()
   (**) :: f a -> f b -> f (a, b)
 
-newtype MonoidalApplicative f a = MonoidalApplicative { getMonoidalApplicative :: f a }
+newtype MonoidalApplicative f a = MonoidalApplicative { getMonoidalApplicative :: f a } deriving (Eq, Show)
 
 instance (Functor' f) => Functor' (MonoidalApplicative f) where
   fmap g = MonoidalApplicative . fmap g . getMonoidalApplicative
@@ -125,6 +125,20 @@ instance (Monoidal' f) => Applicative' (MonoidalApplicative f) where
   pure a  = MonoidalApplicative $ fmap (const a) unit
   g <*> x = MonoidalApplicative $ fmap (uncurry ($)) $ getMonoidalApplicative g ** getMonoidalApplicative x
 
+newtype MonoidalZipList a = MonoidalZipList { getMonoidalZipList :: [a] } deriving (Show, Eq)
+
+instance (Q.Arbitrary a) => Q.Arbitrary (MonoidalZipList a) where
+  arbitrary = do
+    a <- Q.arbitrary
+    return $ MonoidalZipList a
+
+instance Functor' MonoidalZipList where
+  fmap g = MonoidalZipList . fmap g . getMonoidalZipList
+
+instance Monoidal' MonoidalZipList where
+  unit   = MonoidalZipList $ repeat ()
+  x ** y = MonoidalZipList $ zip (getMonoidalZipList x) (getMonoidalZipList y)
+
 firstApplicativeLawHolds :: (Applicative' a, Eq (a b)) => a b -> Bool
 firstApplicativeLawHolds a = (pure id <*> a) == a
 
@@ -132,6 +146,7 @@ applicativeLaws :: IO ()
 applicativeLaws = do
   Q.quickCheck $ \x -> firstApplicativeLawHolds (x :: Maybe Int)
   Q.quickCheck $ \x -> firstApplicativeLawHolds (x :: ZipList Int)
+  Q.quickCheck $ \x -> firstApplicativeLawHolds $ MonoidalApplicative (x :: MonoidalZipList Int)
 
 main :: IO ()
 main = do
