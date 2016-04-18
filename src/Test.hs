@@ -166,6 +166,13 @@ instance Applicative' [] where
 instance Monad' [] where
   f >>= g = concat $ pure g <*> f
 
+instance Applicative' ((->) e) where
+  pure = const
+  g <*> x = \e -> g e $ x e
+
+instance Monad' ((->) e) where
+  f >>= g = \e -> ($ e) . g $ f e
+
 main :: IO ()
 main = do
   functorLaws
