@@ -171,7 +171,7 @@ instance Applicative' ((->) e) where
   g <*> x = \e -> g e $ x e
 
 instance Monad' ((->) e) where
-  f >>= g = \e -> ($ e) . g $ f e
+  f >>= g = \e -> g (f e) e
 
 main :: IO ()
 main = do
