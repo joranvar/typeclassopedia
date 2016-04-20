@@ -110,7 +110,7 @@ instance Functor' ZipList where
 
 instance Applicative' ZipList where
   pure = ZipList . repeat
-  (ZipList gs) <*> (ZipList xs) = ZipList (zipWith ($) gs xs)
+  ZipList gs <*> ZipList xs = ZipList (zipWith ($) gs xs)
 
 class (Functor' f) => Monoidal' f where
   unit :: f ()
