@@ -156,8 +156,12 @@ class (Applicative' f) => Monad' f where
   --return :: a -> f a
   --return = pure
   (>>=) :: f a -> (a -> f b) -> f b
+  f >>= g = join $ pure g <*> f
   (>>)  :: f a -> f b -> f b
   f >> f1 = f >>= const f1
+  join  :: f (f a) -> f a
+  join  = (>>= id)
+  {-# MINIMAL join | (>>=) #-}
 
 instance Applicative' [] where
   pure = (:[])
@@ -185,9 +189,9 @@ instance (Functor' f) => Applicative' (Free f) where
   FreeNode fg <*> x = FreeNode (fmap (<*> x) fg)
 
 instance (Functor' f) => Monad' (Free f) where
-  f >>= g = join $ pure g <*> f where
-    join (Var a) = a
-    join (FreeNode a) = FreeNode (fmap join a)
+  f >>= g = join $ pure g <*> f
+  join (Var a) = a
+  join (FreeNode a) = FreeNode (fmap join a)
 
 main :: IO ()
 main = do
