@@ -173,6 +173,22 @@ instance Applicative' ((->) e) where
 instance Monad' ((->) e) where
   f >>= g = \e -> g (f e) e
 
+data Free f a = Var a | FreeNode (f (Free f a))
+
+instance (Functor' f) => Functor' (Free f) where
+  fmap g (Var a) = Var $ g a
+  fmap g (FreeNode f) = FreeNode $ (fmap . fmap) g f
+
+instance (Functor' f) => Applicative' (Free f) where
+  pure = Var
+  Var g <*> x = fmap g x
+  FreeNode fg <*> x = FreeNode (fmap (<*> x) fg)
+
+instance (Functor' f) => Monad' (Free f) where
+  f >>= g = join $ pure g <*> f where
+    join (Var a) = a
+    join (FreeNode a) = FreeNode (fmap join a)
+
 main :: IO ()
 main = do
   functorLaws
